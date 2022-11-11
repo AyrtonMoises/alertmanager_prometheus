@@ -1,0 +1,12 @@
+groups:
+- name: MongoDB
+  rules:
+  - alert: MongoDBDown
+    expr: mongodb_up == 0
+    for: 90s
+    labels:
+      team: mongodb
+      severity: high
+    annotations:
+      summary: Mongo is down
+      description: The Mongo server {{$labels.instance}} is down

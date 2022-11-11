@@ -1,0 +1,65 @@
+version: '3.3'
+
+services:
+  web:
+    image: amsousa95/rotten-potatoes
+    environment:
+      MONGODB_DB: admin
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGODB_USERNAME: mongouser
+      MONGODB_PASSWORD: mongopass
+    ports:
+      - "5000:5000"
+    networks:
+      - minha-network
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:5.0.0
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: mongopass
+    networks:
+      - minha-network
+  
+  mongoexporter:
+    image:  fabricioveronez/mongo_exporter
+    environment:
+      MONGODB_URI: "mongodb://mongouser:mongopass@mongodb:27017"
+    ports:
+      - "9216:9216"
+    networks:
+      - minha-network
+    depends_on:
+      - mongodb
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./Prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ./Prometheus/mongoDBAlert.rules.yaml:/etc/prometheus/mongoDBAlert.rules
+      - ./Prometheus/web.rules.yaml:/etc/prometheus/web.rules
+    networks:
+      - minha-network
+    depends_on:
+      - web
+
+  alertmanager:
+    image: prom/alertmanager
+    volumes:
+      - ./AlertManager/alertmanager.yaml:/prometheus/alertmanager.yml
+    command:
+      - '--config.file=/prometheus/alertmanager.yml'
+    ports:
+      - 9093:9093
+    networks:
+      - minha-network
+
+networks:
+  minha-network:
+    driver: bridge

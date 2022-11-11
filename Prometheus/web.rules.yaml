@@ -1,0 +1,12 @@
+groups:
+- name: Web
+  rules:
+  - alert: WebManyAccess
+    expr: rate(flask_http_request_total[1m])*60 > 20
+    for: 1m
+    labels:
+      team: web
+      severity: high
+    annotations:
+      summary: High request number on {{$labels.instance}}
+      description: "{{$labels.instance}} has a median request number above 20 (current value: {{$value}}s)"

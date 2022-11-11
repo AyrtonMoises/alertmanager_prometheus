@@ -1,0 +1,34 @@
+global:
+route:
+  receiver: Default
+  group_by: ['alertname']
+  group_wait: 15s
+  group_interval: 15s
+  repeat_interval: 1m
+
+  routes:
+  - receiver: AlertDataBase
+    match:
+      team: mongodb
+
+  - receiver: AlertWeb
+    match:
+      team: web
+
+receivers:
+- name: Default
+  webhook_configs:
+  - url: 'https://pruu.herokuapp.com/dump/wpwebhookdefault'
+
+- name: AlertDataBase
+  webhook_configs:
+  - url: 'https://pruu.herokuapp.com/dump/wpwebhookmongodb'
+  slack_configs:
+  - api_url: https://hooks.slack.com/services/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
+    channel: '#monitoramento-mongodb'
+    icon_url: https://avatars3.githubusercontent.com/u/3380462
+    text: "\nsummary: {{ .CommonAnnotations.summary }}\ndescription: {{ .CommonAnnotations.description }}"
+
+- name: AlertWeb
+  webhook_configs:
+  - url: 'https://pruu.herokuapp.com/dump/wpwebhookweb'
